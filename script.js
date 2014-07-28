@@ -250,7 +250,7 @@ var City = function(data) {
   this.rename.button.addEventListener('click', function(){
     this.name = prompt('Rename ' + this.name + ' to:');
     if (ga) {
-      ga('send', 'event', 'action', 'rename', JSON.stringify(this.data()));
+      ga('send', 'event', 'action', 'rename', this.name);
     }
     this.update();
   }.bind(this));
