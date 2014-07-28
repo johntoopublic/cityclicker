@@ -26,9 +26,20 @@ h1 {
   text-align: center;
 }
 
+u {
+  border-bottom: 1px solid #666;
+  text-decoration: none;
+}
+
 .city {
   margin: auto;
   text-align: center;
+}
+
+.close {
+  cursor: pointer;
+  float: left;
+  margin-right: 5px;
 }
 
 .residential button {
@@ -43,17 +54,33 @@ h1 {
   background: #ffc;
 }
 
+.newspaper, .panel, .update {
+  margin: auto;
+  max-width: 480px;
+}
+
+.newspaper {
+  text-align: left;
+}
+
+.newspaper h2 {
+  margin-top: 4px;
+}
+
+.newspaper>div {
+  border: 1px solid #000;
+  margin-top: 10px;
+  padding: 10px;
+}
+
 .panel {
   display: inline-block;
   margin: 20px;
-  max-width: 480px;
   text-align: left;
   vertical-align: top;
 }
 
 .update {
-  margin: auto;
-  max-width: 480px;
   text-align: left;
 }
 
