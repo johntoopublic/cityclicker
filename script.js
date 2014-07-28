@@ -250,7 +250,7 @@ var City = function(data) {
   this.rename.button.addEventListener('click', function(){
     this.name = prompt('Rename ' + this.name + ' to:');
     if (ga) {
-      ga('send', 'event', 'rename', this.name, JSON.stringify(this.data()));
+      ga('send', 'event', 'action', 'rename', JSON.stringify(this.data()));
     }
     this.update();
   }.bind(this));
@@ -258,7 +258,7 @@ var City = function(data) {
   this.reset.button.addEventListener('click', function(){
     if (confirm('Are you sure you want to reset the game?')) {
       if (ga) {
-        ga('send', 'event', 'reset', this.day, JSON.stringify(this.data()));
+        ga('send', 'event', 'action', 'reset', JSON.stringify(this.data()), this.day);
       }
       localStorage.setItem('cityclicker', '');
       location = '';
@@ -326,8 +326,8 @@ City.prototype.update = function() {
     Coffers: format(this.currency),
   });
   localStorage.setItem('cityclicker', btoa(JSON.stringify(this.data())));
-  if (ga && (this.day < 100 && this.day % 10 == 0) || (this.day < 2000 && this.day % 100 == 0) || this.day % 1000 == 0) {
-    ga('send', 'event', 'save', this.day, this.population, JSON.stringify(this.data()));
+  if (ga && (this.day < 200 && this.day % 10 == 0) || (this.day < 2000 && this.day % 100 == 0) || this.day % 1000 == 0) {
+    ga('send', 'event', 'action', 'save', JSON.stringify(this.data()),  this.population);
   }
 };
 
