@@ -149,7 +149,7 @@ Update.prototype.update = function() {
   var cost = this.price();
   this.button.innerHTML = format(cost);
   this.button.disabled = cost > this.city.currency;
-  this.label.innerHTML = message.replace('CITY', this.city.name);
+  this.label.innerHTML = message.replace('CITY', '<b>' + this.city.name + '</b>');
 };
 
 var City = function(data) {
