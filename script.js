@@ -246,7 +246,7 @@ var City = function(data) {
       'Raise Commercial tax.');
   this.industryTax = new Update(this, data.industryTax, 1000, 2.2,
       'Raise Industrial tax.');
-  this.rename = new Update(this, data.rename, 100, 1.2, 'Rename CITY.');
+  this.rename = new Update(this, data.rename, 1000, 1.2, 'Rename CITY.');
   this.rename.button.addEventListener('click', function(){
     this.name = prompt('Rename ' + this.name + ' to:');
     this.update();
