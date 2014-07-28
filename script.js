@@ -1,4 +1,7 @@
 (function() {
+var teams = ['Hoboken Zephyrs', 'Shelbyville Sharks', 'Santa Destroy Warriors', 'New New York Yankees', 'North Shore High Lions'];
+var sports = ['Airball', 'Blernsball', 'Brockian Ultra-Cricket', 'Chess', 'Dungeons & Dungeons', 'Laserball', 'Quidditch'];
+
 var format = function(amount, symbol) {
   var amount = Math.floor(amount);
   if (amount > 9999999) {
@@ -145,6 +148,8 @@ Update.prototype.update = function() {
   if (!message) {
     this.container.style.display = 'none';
     return;
+  } else if (typeof(message) == 'function') {
+    message = message(this);
   }
   var cost = this.price();
   this.button.innerHTML = format(cost);
@@ -157,8 +162,6 @@ var City = function(data) {
   this.day = data.day || 0;
   this.name = data.name || 'The City';
   this.population = data.population || 0;
-  this.status = document.createElement('div');
-  this.status.className = 'panel';
   this.container = document.createElement('div');
   this.container.className = 'city';
   this.items = [];
@@ -173,7 +176,7 @@ var City = function(data) {
       'Connect a highway to CITY.',
       'Connect the railway to CITY.',
       'Build a seaport in CITY.',
-      'Build a airport in CITY.',
+      'Build an airport in CITY.',
       'Advertise CITY in other cities.',
       'Absorb neighboring city into CITY.',
       'Advertise CITY in other countries.',
@@ -208,9 +211,9 @@ var City = function(data) {
     'Give corporations extra votes.', [
       'Put up billboards in CITY.',
       'Build a mall in CITY.',
-      'Install CITY monorail to mall.',
+      'Build direct CITY monorail to mall.',
       'Legalize gambling in CITY.',
-      'Upgrade CITY mall to megamall.',
+      'Upgrade CITY Mall to CITY Megamall.',
       'Add giant TVs to all CITY intersections.',
       'Remove liquor restrictions.',
       'Allow anonymously held corporations.',
@@ -223,29 +226,29 @@ var City = function(data) {
     ]);
   this.industryDemand = new Update(this, data.industryDemand, 15000, 1.7,
     'Increase robot workforce.', [
-      'Build power plant in CITY.',
+      'Build a power plant in CITY.',
       'Build a factory in CITY.',
-      'Build army base in CITY.',
+      'Build an army base in CITY.',
       'Repeal environmental protections.',
       'Build a mine in CITY.',
       'Automate CITY construction.',
-      'Upgrade CITY power plant to fission.',
+      'Upgrade CITY Power Plant to fission.',
       'Build worker housing near CITY.',
       'Upgrade CITY mine to strip mine.',
       'Build toxic waste dump in CITY.',
-      'Upgrade CITY power plant to fusion.',
+      'Upgrade CITY Power Plant to fusion.',
       'Remove minimum wage in CITY.',
       'Build CITY robot factories.',
       'Upgrade workers to cyborgs.',
       'Repeal human rights protections.',
       'Nerve staple cyborg workers.',
     ]);
-  this.residentTax = new Update(this, data.residentTax, 1000, 2.6,
-      'Raise Residential tax.');
-  this.commerceTax = new Update(this, data.commerceTax, 1000, 2.4,
-      'Raise Commercial tax.');
-  this.industryTax = new Update(this, data.industryTax, 1000, 2.2,
-      'Raise Industrial tax.');
+  this.residentTax = new Update(this, data.residentTax, 1000, 2.6, function() {
+    return 'Raise Residential tax (<b>' + this.resident.tax + '</b>%).'}.bind(this));
+  this.commerceTax = new Update(this, data.commerceTax, 1000, 2.4, function() {
+    return 'Raise Commercial tax (<b>' + this.commerce.tax + '</b>%).'}.bind(this));
+  this.industryTax = new Update(this, data.industryTax, 1000, 2.2, function() {
+    return 'Raise Industrial tax (<b>' + this.industry.tax + '</b>%).'}.bind(this));
   this.rename = new Update(this, data.rename, 1000, 1.2, 'Rename CITY.');
   this.rename.button.addEventListener('click', function(){
     this.name = prompt('Rename ' + this.name + ' to:');
@@ -261,11 +264,30 @@ var City = function(data) {
         ga('send', 'event', 'action', 'reset', JSON.stringify(this.data()), this.day);
       }
       localStorage.setItem('cityclicker', '');
-      location = '';
+      location.reload();
     }
   }.bind(this));
-  this.update();
+  this.news = new Update(this, data.news, 1, 1.07, function() {
+    if (this.population > 1e16) {
+      return 'Receive CITY thought broadcast.';
+    } else if (this.population > 1e12) {
+      return 'Check CITY app.';
+    } else if (this.population > 1e8) {
+      return 'Watch CITY news.';
+    } else if (this.population > 1e4) {
+      return 'Check CITY website.';
+    } else {
+      return 'Read CITY Times.';
+    }
+  }.bind(this));
+  this.news.button.addEventListener('click', this.report.bind(this));
+  this.newspaper = document.createElement('div');
+  this.newspaper.className = 'newspaper';
+  this.container.appendChild(this.newspaper);
+  this.status = document.createElement('div');
+  this.status.className = 'panel';
   this.container.appendChild(this.status);
+  this.update();
   document.body.appendChild(this.container);
 };
 
@@ -286,8 +308,82 @@ City.prototype.data = function() {
     commerceTax: this.commerceTax.level,
     industryTax: this.industryTax.level,
     rename: this.rename.level,
+    news: this.news.level,
   };
 };
+
+City.prototype.report = function() {
+  var update = document.createElement('div');
+  var close = document.createElement('div');
+  close.innerHTML = '<b>&times</b>';
+  close.className = 'close';
+  close.addEventListener('click', function() {
+    this.newspaper.removeChild(update);
+  }.bind(this));
+  update.appendChild(close);
+  var text = document.createElement('div');
+  var resident = this.resident.demand / this.resident.capacity();
+  var html = '<h1>' + this.name + ' News</h1>';
+  html += '<h3>Opinion</h3>';
+  if (resident >= 1) {
+    var demand = this.transport.label.innerHTML;
+    html += 'Housing is currently in demand! When will the mayor zone some more residential';
+    if (this.residentTax.price() < this.currency) {
+      html += ' or raise that tax rate of ' + this.resident.tax + '%';
+    }
+    html += '? While on the subject of getting more citizens into the city, the proposal to <u>' + demand[0].toLowerCase() + demand.slice(1, demand.length - 1) + '</u> would likely help fill those built houses faster in the future.';
+  } else {
+    var demand = this.residentDemand.label.innerHTML;
+    html += 'Zoned residential is currently being unused. Has the mayor considered the proposal to <u>' + demand[0].toLowerCase() + demand.slice(1, demand.length - 1) + '</u> to encourage people to move in?';
+  }
+  html += '<br><br>';
+  var commerce = this.commerce.demand / this.commerce.capacity();
+  if (commerce >= 1) {
+    html += resident ? 'Like' : 'Unlike';
+    html += ' residential, businesses want to set up shop! Now\'s the time to ';
+    if (this.commerceTax.price() < this.currency) {
+      html += 'either bump up that tax rate of ' + this.commerce.tax + '% or ';
+    }
+    html += 'add more commercial zones.';
+  } else {
+    var demand = this.commerceDemand.label.innerHTML;
+    html += resident ? 'Unlike' : 'Like';
+    html += ' residential, zoned commercial still lies empty. When will the mayor <u>' + demand[0].toLowerCase() + demand.slice(1, demand.length - 1) + '</u> so businesses can function here?';
+  }
+  html += '<br><br>';
+  var industry = this.industry.demand / this.industry.capacity();
+  if (industry >= 1) {
+    html += 'Finally, why isn\'t the mayor expanding industry?';
+    if (this.industryTax.price() < this.currency) {
+      html += ' Is the mayor just going to increase the ' + this.industry.tax + '% taxes since there\'s not enough zones to meet demand? Harsh.';
+    }
+  } else {
+    var demand = this.industryDemand.label.innerHTML;
+    html += 'For reasons unclear to this reporter, the mayor seems to be considering whether to <u>' + demand[0].toLowerCase() + demand.slice(1, demand.length - 1) + '</u> to entice industry into the city. While high industrial and commercial demand drive up residential demand, one wonders if there is a better way.';
+  }
+  html += '<h3>Sports</h3>';
+  if (this.population == 0) {
+    html += this.name + ' doesn\'t yet have a sports time, as no one lives here yet.';
+  } else {
+    var us = Math.floor(Math.random() * 20);
+    var them = Math.floor(Math.random() * 20);
+    var team = teams[Math.floor(Math.random() * teams.length)];
+    var sport = sports[Math.floor(Math.random() * sports.length)];
+    if (us > them) {
+      html += 'Local sports team the <b>' + this.name + ' Llamas</b> handily defeated rival team the <b>' + team + '</b> <b>' + us + '</b> to <b>' + them + '</b> in <b>' + sport + '</b>. Go team!';
+    } else if (us < them) {
+      html += 'Local sports team the <b>' + this.name + ' Llamas</b> suffered a crushing defeat against rival team the <b>' + team + '</b>. The ' + sport + ' game ended with the Llamas down by <b>' + (them - us) + '</b>.';
+      if (them - us > 10) {
+        html += ' It was indeed a dark day for ' + this.name + '.';
+      }
+    } else {
+      html += 'After a long and well played ' + sport + ' match, local sports team the <b>' + this.name + ' Llamas</b> tied rival team the <b>' + team + '</b>. The <b>' + us + '</b> to <b>' + them + '</b> game will surely go down as one of the best in the history of the sport.';
+    }
+  }
+  text.innerHTML = html;
+  update.appendChild(text);
+  this.newspaper.appendChild(update);
+}
 
 City.prototype.spend = function(cost) {
   if (cost <= this.currency) {
