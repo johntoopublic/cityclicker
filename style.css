@@ -22,6 +22,7 @@ button:focus {
 }
 
 h1 {
+  clear: both;
   font-weight: bold;
   text-align: center;
 }
@@ -95,7 +96,7 @@ u {
   width: 100px;
 }
 
-@media (min-width: 800px) {
+@media (min-width: 900px) {
   .status {
     margin: 20px;
     position: absolute;

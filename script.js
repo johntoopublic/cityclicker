@@ -10,8 +10,11 @@ var format = function(amount, symbol) {
   return amount + (symbol || '&curren;');
 };
 
-var output = function(element, attributes) {
+var output = function(element, attributes, head) {
   var html = [];
+  if (head) {
+    html.push(head);
+  }
   for (var k in attributes) {
     html.push(k + ': <b>' + attributes[k] + '</b>');
   }
@@ -212,7 +215,7 @@ var City = function(data) {
       'Move other world wonders to CITY.',
       'Build Fountain of Youth in CITY.',
     ]);
-  this.commerceDemand = new Update(this, data.commerceDemand, 10000, 1.8,
+  this.commerceDemand = new Update(this, data.commerceDemand, 5000, 1.8,
     'Give corporations extra votes.', [
       'Put up billboards in CITY.',
       'Build a mall in CITY.',
@@ -229,7 +232,7 @@ var City = function(data) {
       'Legalize all narcotics.',
       'Give corporations CITY keys.',
     ]);
-  this.industryDemand = new Update(this, data.industryDemand, 15000, 1.7,
+  this.industryDemand = new Update(this, data.industryDemand, 10000, 1.7,
     'Increase robot workforce.', [
       'Build a power plant in CITY.',
       'Build a factory in CITY.',
@@ -314,6 +317,10 @@ City.prototype.data = function() {
   };
 };
 
+City.prototype.date = function() {
+  return new Date(this.day * 24 * 60 * 60 * 1000).toDateString();
+}
+
 City.prototype.report = function() {
   var update = document.createElement('div');
   var close = document.createElement('div');
@@ -325,7 +332,7 @@ City.prototype.report = function() {
   update.appendChild(close);
   var text = document.createElement('div');
   var resident = this.resident.demand / this.resident.capacity();
-  var html = '<b class="date">Day ' + this.day+ '</b>';
+  var html = '<b class="date">' + this.date() + '</b>';
   html += '<h1>' + this.name + ' News</h1>';
   html += '<h3>Opinion</h3>';
   if (resident >= 1) {
@@ -342,7 +349,7 @@ City.prototype.report = function() {
   html += '<br><br>';
   var commerce = this.commerce.demand / this.commerce.capacity();
   if (commerce >= 1) {
-    html += resident ? 'Like' : 'Unlike';
+    html += resident >= 1 ? 'Like' : 'Unlike';
     html += ' residential, businesses want to set up shop! Now\'s the time to ';
     if (this.commerceTax.price() < this.currency) {
       html += 'either bump up that tax rate of ' + this.commerce.tax + '% or ';
@@ -350,7 +357,7 @@ City.prototype.report = function() {
     html += 'add more commercial zones.';
   } else {
     var demand = this.commerceDemand.label.innerHTML;
-    html += resident ? 'Unlike' : 'Like';
+    html += resident >= 1 ? 'Unlike' : 'Like';
     html += ' residential, zoned commercial still lies empty. When will the mayor <u>' + demand[0].toLowerCase() + demand.slice(1, demand.length - 1) + '</u> so businesses can function here?';
   }
   html += '<br><br>';
@@ -424,10 +431,9 @@ City.prototype.update = function(tax) {
   }
   output(this.status, {
     City: this.name,
-    Day: this.day,
     Population: format(this.population, '&hearts;'),
     Coffers: format(this.currency),
-  });
+  }, '<b>' + this.date() + '</b>');
   localStorage.setItem('cityclicker', btoa(JSON.stringify(this.data())));
   if (ga && (this.day < 200 && this.day % 10 == 0) || (this.day < 2000 && this.day % 100 == 0) || this.day % 1000 == 0) {
     ga('send', 'event', 'action', 'save', JSON.stringify(this.data()),  this.population);
