@@ -236,8 +236,8 @@ var City = function(data) {
       var multiplier = Math.max(1.01, 2 - this.city.resident.tax / 100);
       output(this.alt, {
         Multiplier: format(multiplier, '&times;'),
-        Current: format(Math.pow(multiplier, this.level), '&hearts; per second'),
-        Upgrade: format(Math.pow(multiplier, this.level + 1), '&hearts; per second'),
+        'Current rate': format(Math.pow(multiplier, this.level), '&hearts; per second'),
+        'Upgrade rate': format(Math.pow(multiplier, this.level + 1), '&hearts; per second'),
         'Time to purchase': format(Math.max(0,
               (this.price() - this.city.currency) / this.city.tax), ' seconds'),
       }, 'Gain population faster');
@@ -263,8 +263,8 @@ var City = function(data) {
     ], function() {
       output(this.alt, {
         Multiplier: format(residentMultiplier, '&times;'),
-        Current: format(this.city.resident.demand, '&hearts;'),
-        Upgrade: format(this.city.resident.demand * residentMultiplier, '&hearts;'),
+        'Current demand': format(this.city.resident.demand, '&hearts;'),
+        'Upgrade demand': format(this.city.resident.demand * residentMultiplier, '&hearts;'),
         'Time to purchase': format(Math.max(0,
               (this.price() -this.city.currency) /this.city.tax), ' seconds'),
       }, 'Increase residential demand');
@@ -288,8 +288,8 @@ var City = function(data) {
     ], function() {
       output(this.alt, {
         Multiplier: format(commerceMultiplier, '&times;'),
-        Current: format(this.city.commerce.demand, '&hearts;'),
-        Upgrade: format(this.city.commerce.demand * commerceMultiplier, '&hearts;'),
+        'Current demand': format(this.city.commerce.demand, '&hearts;'),
+        'Upgrade demand': format(this.city.commerce.demand * commerceMultiplier, '&hearts;'),
         'Time to purchase': format(Math.max(0,
               (this.price() -this.city.currency) /this.city.tax), ' seconds'),
       }, 'Increase commercial demand');
@@ -315,8 +315,8 @@ var City = function(data) {
     ], function() {
       output(this.alt, {
         Multiplier: format(industryMultiplier, '&times;'),
-        Current: format(this.city.industry.demand, '&hearts;'),
-        Upgrade: format(this.city.industry.demand * industryMultiplier, '&hearts;'),
+        'Current demand': format(this.city.industry.demand, '&hearts;'),
+        'Upgrade demand': format(this.city.industry.demand * industryMultiplier, '&hearts;'),
         'Time to purchase': format(Math.max(0,
               (this.price() -this.city.currency) /this.city.tax), ' seconds'),
       }, 'Increase industrial demand');
@@ -326,8 +326,8 @@ var City = function(data) {
     function() {
       output(this.alt, {
         'New Rate': this.city.resident.tax + 1 + '%',
-        Current: format(this.city.resident.income()),
-        Upgrade: format(this.city.resident.income(this.city.resident.tax + 1)),
+        'Current income': format(this.city.resident.income()),
+        'Upgrade income': format(this.city.resident.income(this.city.resident.tax + 1)),
         'Time to purchase': format(Math.max(0,
               (this.price() -this.city.currency) /this.city.tax), ' seconds'),
       }, 'Raise residential taxes');
@@ -337,8 +337,8 @@ var City = function(data) {
     function() {
       output(this.alt, {
         'New Rate': this.city.commerce.tax + 1 + '%',
-        Current: format(this.city.commerce.income()),
-        Upgrade: format(this.city.commerce.income(this.city.commerce.tax + 1)),
+        'Current income': format(this.city.commerce.income()),
+        'Upgrade income': format(this.city.commerce.income(this.city.commerce.tax + 1)),
         'Time to purchase': format(Math.max(0,
               (this.price() -this.city.currency) /this.city.tax), ' seconds'),
       }, 'Raise commercial taxes');
@@ -348,8 +348,8 @@ var City = function(data) {
     function() {
       output(this.alt, {
         'New Rate': this.city.industry.tax + 1 + '%',
-        Current: format(this.city.industry.income()),
-        Upgrade: format(this.city.industry.income(this.city.industry.tax + 1)),
+        'Current income': format(this.city.industry.income()),
+        'Upgrade income': format(this.city.industry.income(this.city.industry.tax + 1)),
         'Time to purchase': format(Math.max(0,
               (this.price() -this.city.currency) /this.city.tax), ' seconds'),
       }, 'Raise industrial taxes');
