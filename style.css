@@ -102,9 +102,13 @@ button:hover + .alt {
   display: block;
 }
 
+.update {
+  padding: 5px;
+}
+
 .update button {
   background: #eee;
-  margin: 5px;
+  margin-right: 5px;
   width: 100px;
 }
 
