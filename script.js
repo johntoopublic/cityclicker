@@ -129,7 +129,7 @@ Zone.prototype.update = function() {
       Built: data.built + ' / ' + data.amount,
     });
     output(data.alt, {
-      'Building capacity': format(data.density, this.symbol),
+      'Zone capacity': format(data.density, this.symbol),
       'Current demand': format(this.demand, this.symbol),
       'Total built': format(this.capacity(), this.symbol),
       'Total zoned': format(this.zoned(), this.symbol),
