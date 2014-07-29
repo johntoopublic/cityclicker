@@ -286,8 +286,8 @@ var City = function(data) {
     ], function() {
       output(this.alt, {
         Multiplier: format(commerceMultiplier, '&times;'),
-        'Current demand': format(this.city.commerce.demand, '&hearts;'),
-        'Upgrade demand': format(this.city.commerce.demand * commerceMultiplier, '&hearts;'),
+        'Current demand': format(this.city.commerce.demand, '&diams;'),
+        'Upgrade demand': format(this.city.commerce.demand * commerceMultiplier, '&diams;'),
         'Time to purchase': format(Math.max(0,
               (this.price() -this.city.currency) /this.city.tax), ' seconds'),
       }, 'Increase commercial demand');
@@ -313,8 +313,8 @@ var City = function(data) {
     ], function() {
       output(this.alt, {
         Multiplier: format(industryMultiplier, '&times;'),
-        'Current demand': format(this.city.industry.demand, '&hearts;'),
-        'Upgrade demand': format(this.city.industry.demand * industryMultiplier, '&hearts;'),
+        'Current demand': format(this.city.industry.demand, '&clubs;'),
+        'Upgrade demand': format(this.city.industry.demand * industryMultiplier, '&clubs;'),
         'Time to purchase': format(Math.max(0,
               (this.price() -this.city.currency) /this.city.tax), ' seconds'),
       }, 'Increase industrial demand');
