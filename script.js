@@ -72,9 +72,9 @@ var Zone = function(city, type, symbol, load) {
     data.alt.className = 'alt';
     data.status = document.createElement('div');
     data.status.style.display = 'none';
+    container.appendChild(data.status);
     container.appendChild(data.button);
     container.appendChild(data.alt);
-    container.appendChild(data.status);
   }
   this.city.container.appendChild(container);
   this.city.items.push(this);
@@ -130,8 +130,6 @@ Zone.prototype.update = function() {
       'Current income': format(this.income()),
       'Time to purchase': format(Math.max(0,
             (cost - this.city.currency) / this.city.tax), ' seconds'),
-      Price: format(cost),
-      Built: data.built + ' / ' + data.amount,
     }, 'Add ' + this.type + ' Zones');
     data.button.disabled = cost > this.city.currency;
     if (data.built < this.demand / data.density && data.built < data.amount) {
