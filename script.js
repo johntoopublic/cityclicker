@@ -18,6 +18,11 @@ var format = function(amount, symbol) {
   return amount + (symbol || '&curren;');
 };
 
+var formatTime = function(city, cost) {
+  var time = Math.max(0, Math.ceil((cost - city.currency) / city.tax));
+  return format(time, time == 1 ? ' second' : ' seconds');
+}
+
 var output = function(element, attributes, head) {
   var html = [];
   if (head) {
@@ -128,8 +133,7 @@ Zone.prototype.update = function() {
       'Current demand': format(this.demand, this.symbol),
       'Current capacity': format(this.capacity(), this.symbol),
       'Current income': format(this.income()),
-      'Time to purchase': format(Math.max(0,
-            (cost - this.city.currency) / this.city.tax), ' seconds'),
+      'Time to purchase': formatTime(this.city, cost),
     }, 'Add ' + this.type + ' Zones');
     data.button.disabled = cost > this.city.currency;
     if (data.built < this.demand / data.density && data.built < data.amount) {
@@ -187,8 +191,7 @@ Update.prototype.update = function() {
     this.stats();
   } else {
     output(this.alt, {
-      'Time to purchase': format(Math.max(0,
-            (cost - this.city.currency) / this.city.tax), ' seconds'),
+      'Time to purchase': formatTime(this.city, cost),
     }, this.title);
   }
   this.button.innerHTML = format(cost);
@@ -236,8 +239,7 @@ var City = function(data) {
         Multiplier: format(multiplier, '&times;'),
         'Current rate': format(Math.pow(multiplier, this.level), '&hearts; per second'),
         'Upgrade rate': format(Math.pow(multiplier, this.level + 1), '&hearts; per second'),
-        'Time to purchase': format(Math.max(0,
-              (this.price() - this.city.currency) / this.city.tax), ' seconds'),
+        'Time to purchase': formatTime(this.city, this.price()),
       }, 'Gain population faster');
     });
   this.residentDemand = new Update(this, data.residentDemand, 5000, 1.9,
@@ -263,8 +265,7 @@ var City = function(data) {
         Multiplier: format(residentMultiplier, '&times;'),
         'Current demand': format(this.city.resident.demand, '&hearts;'),
         'Upgrade demand': format(this.city.resident.demand * residentMultiplier, '&hearts;'),
-        'Time to purchase': format(Math.max(0,
-              (this.price() -this.city.currency) /this.city.tax), ' seconds'),
+        'Time to purchase': formatTime(this.city, this.price()),
       }, 'Increase residential demand');
     });
   this.commerceDemand = new Update(this, data.commerceDemand, 5000, 1.8,
@@ -288,8 +289,7 @@ var City = function(data) {
         Multiplier: format(commerceMultiplier, '&times;'),
         'Current demand': format(this.city.commerce.demand, '&diams;'),
         'Upgrade demand': format(this.city.commerce.demand * commerceMultiplier, '&diams;'),
-        'Time to purchase': format(Math.max(0,
-              (this.price() -this.city.currency) /this.city.tax), ' seconds'),
+        'Time to purchase': formatTime(this.city, this.price()),
       }, 'Increase commercial demand');
     });
   this.industryDemand = new Update(this, data.industryDemand, 10000, 1.7,
@@ -315,8 +315,7 @@ var City = function(data) {
         Multiplier: format(industryMultiplier, '&times;'),
         'Current demand': format(this.city.industry.demand, '&clubs;'),
         'Upgrade demand': format(this.city.industry.demand * industryMultiplier, '&clubs;'),
-        'Time to purchase': format(Math.max(0,
-              (this.price() -this.city.currency) /this.city.tax), ' seconds'),
+        'Time to purchase': formatTime(this.city, this.price()),
       }, 'Increase industrial demand');
     });
   this.residentTax = new Update(this, data.residentTax, 1000, 2.6, function() {
@@ -326,8 +325,7 @@ var City = function(data) {
         'New Rate': this.city.resident.tax + 1 + '%',
         'Current income': format(this.city.resident.income()),
         'Upgrade income': format(this.city.resident.income(this.city.resident.tax + 1)),
-        'Time to purchase': format(Math.max(0,
-              (this.price() -this.city.currency) /this.city.tax), ' seconds'),
+        'Time to purchase': formatTime(this.city, this.price()),
       }, 'Raise residential taxes');
     });
   this.commerceTax = new Update(this, data.commerceTax, 1000, 2.4, function() {
@@ -337,8 +335,7 @@ var City = function(data) {
         'New Rate': this.city.commerce.tax + 1 + '%',
         'Current income': format(this.city.commerce.income()),
         'Upgrade income': format(this.city.commerce.income(this.city.commerce.tax + 1)),
-        'Time to purchase': format(Math.max(0,
-              (this.price() -this.city.currency) /this.city.tax), ' seconds'),
+        'Time to purchase': formatTime(this.city, this.price()),
       }, 'Raise commercial taxes');
     });
   this.industryTax = new Update(this, data.industryTax, 1000, 2.2, function() {
@@ -348,8 +345,7 @@ var City = function(data) {
         'New Rate': this.city.industry.tax + 1 + '%',
         'Current income': format(this.city.industry.income()),
         'Upgrade income': format(this.city.industry.income(this.city.industry.tax + 1)),
-        'Time to purchase': format(Math.max(0,
-              (this.price() -this.city.currency) /this.city.tax), ' seconds'),
+        'Time to purchase': formatTime(this.city, this.price()),
       }, 'Raise industrial taxes');
     });
   this.rename = new Update(this, data.rename, 1000, 1.2, 'Rename CITY.');
