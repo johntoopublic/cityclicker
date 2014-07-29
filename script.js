@@ -432,7 +432,7 @@ City.prototype.report = function() {
   html += '<h3>Opinion</h3>';
   if (resident >= 1) {
     var demand = this.transport.label.innerHTML;
-    html += 'Housing is currently in demand! When will the mayor zone some more residential';
+    html += 'Housing is currently in demand! Why won\'t the mayor zone some more residential';
     if (this.residentTax.price() < this.currency) {
       html += ' or raise that tax rate of ' + this.resident.tax + '%';
     }
