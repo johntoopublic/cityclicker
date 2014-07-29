@@ -129,10 +129,11 @@ Zone.prototype.update = function() {
       Built: data.built + ' / ' + data.amount,
     });
     output(data.alt, {
-      'Capacity per unit': format(data.density, this.symbol),
+      'Building capacity': format(data.density, this.symbol),
       'Current demand': format(this.demand, this.symbol),
-      'Current capacity': format(this.capacity(), this.symbol),
-      'Current income': format(this.income()),
+      'Total built': format(this.capacity(), this.symbol),
+      'Total zoned': format(this.zoned(), this.symbol),
+      'Type income': format(this.income()),
       'Time to purchase': formatTime(this.city, cost),
     }, 'Add ' + this.type + ' Zones');
     data.button.disabled = cost > this.city.currency;
@@ -143,6 +144,14 @@ Zone.prototype.update = function() {
     data.status.style.display = visible ? '' : 'none';
     visible = !!data.amount;
   }
+};
+
+Zone.prototype.zoned = function() {
+  var total = 0;
+  for (var i = 0; i < this.sizes.length; i++) {
+    total += this.sizes[i].amount * this.sizes[i].density;
+  }
+  return total;
 };
 
 var Update = function(city, level, cost, scale, message, levels, stats) {
