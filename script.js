@@ -215,7 +215,7 @@ var City = function(data) {
       'Move other world wonders to CITY.',
       'Build Fountain of Youth in CITY.',
     ]);
-  this.commerceDemand = new Update(this, data.commerceDemand, 10000, 1.8,
+  this.commerceDemand = new Update(this, data.commerceDemand, 5000, 1.8,
     'Give corporations extra votes.', [
       'Put up billboards in CITY.',
       'Build a mall in CITY.',
@@ -232,7 +232,7 @@ var City = function(data) {
       'Legalize all narcotics.',
       'Give corporations CITY keys.',
     ]);
-  this.industryDemand = new Update(this, data.industryDemand, 15000, 1.7,
+  this.industryDemand = new Update(this, data.industryDemand, 10000, 1.7,
     'Increase robot workforce.', [
       'Build a power plant in CITY.',
       'Build a factory in CITY.',
@@ -343,7 +343,7 @@ City.prototype.report = function() {
   html += '<br><br>';
   var commerce = this.commerce.demand / this.commerce.capacity();
   if (commerce >= 1) {
-    html += resident ? 'Like' : 'Unlike';
+    html += resident >= 1 ? 'Like' : 'Unlike';
     html += ' residential, businesses want to set up shop! Now\'s the time to ';
     if (this.commerceTax.price() < this.currency) {
       html += 'either bump up that tax rate of ' + this.commerce.tax + '% or ';
@@ -351,7 +351,7 @@ City.prototype.report = function() {
     html += 'add more commercial zones.';
   } else {
     var demand = this.commerceDemand.label.innerHTML;
-    html += resident ? 'Unlike' : 'Like';
+    html += resident >= 1 ? 'Unlike' : 'Like';
     html += ' residential, zoned commercial still lies empty. When will the mayor <u>' + demand[0].toLowerCase() + demand.slice(1, demand.length - 1) + '</u> so businesses can function here?';
   }
   html += '<br><br>';
