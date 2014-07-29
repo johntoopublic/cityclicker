@@ -10,8 +10,11 @@ var format = function(amount, symbol) {
   return amount + (symbol || '&curren;');
 };
 
-var output = function(element, attributes) {
+var output = function(element, attributes, head) {
   var html = [];
+  if (head) {
+    html.push(head);
+  }
   for (var k in attributes) {
     html.push(k + ': <b>' + attributes[k] + '</b>');
   }
@@ -308,6 +311,10 @@ City.prototype.data = function() {
   };
 };
 
+City.prototype.date = function() {
+  return new Date(this.day * 24 * 60 * 60 * 1000).toDateString();
+}
+
 City.prototype.report = function() {
   var update = document.createElement('div');
   var close = document.createElement('div');
@@ -319,7 +326,7 @@ City.prototype.report = function() {
   update.appendChild(close);
   var text = document.createElement('div');
   var resident = this.resident.demand / this.resident.capacity();
-  var html = '<b class="date">Day ' + this.day+ '</b>';
+  var html = '<b class="date">' + this.date() + '</b>';
   html += '<h1>' + this.name + ' News</h1>';
   html += '<h3>Opinion</h3>';
   if (resident >= 1) {
@@ -418,10 +425,9 @@ City.prototype.update = function(tax) {
   }
   output(this.status, {
     City: this.name,
-    Day: this.day,
     Population: format(this.population, '&hearts;'),
     Coffers: format(this.currency),
-  });
+  }, '<b>' + this.date() + '</b>');
   localStorage.setItem('cityclicker', btoa(JSON.stringify(this.data())));
 };
 
