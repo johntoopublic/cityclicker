@@ -552,9 +552,10 @@ var load = function() {
 var data = load();
 var city = new City(data);
 var time = function() {
+  var start = new Date();
   city.update(true);
   city.day++;
-  setTimeout(time, 1000);
+  setTimeout(time, Math.max(1000 - (new Date() - start), 100));
 };
 setTimeout(time, 1000);
 })();
