@@ -2,8 +2,16 @@
 var teams = ['Hoboken Zephyrs', 'Shelbyville Sharks', 'Santa Destroy Warriors', 'New New York Yankees', 'North Shore High Lions'];
 var sports = ['Airball', 'Blernsball', 'Brockian Ultra-Cricket', 'Chess', 'Dungeons & Dungeons', 'Laserball', 'Quidditch'];
 
+var residentMultiplier = 1.05;
+var commerceMultiplier = 1.1;
+var industryMultiplier = 1.1;
+
 var format = function(amount, symbol) {
-  var amount = Math.floor(amount);
+  if (amount > 9) {
+    amount = Math.floor(amount);
+  } else {
+    amount = Math.floor(amount * 100) / 100;
+  }
   if (amount > 9999999) {
     amount = amount.toExponential(2);
   }
@@ -13,7 +21,7 @@ var format = function(amount, symbol) {
 var output = function(element, attributes, head) {
   var html = [];
   if (head) {
-    html.push(head);
+    html.push('<b>' + head + '</b>');
   }
   for (var k in attributes) {
     html.push(k + ': <b>' + attributes[k] + '</b>');
@@ -42,6 +50,8 @@ var Zone = function(city, type, symbol, load) {
     });
   }
   this.city = city;
+  this.type = type;
+  this.symbol = symbol;
   this.tax = load.tax || 10;
   this.demand = 0;
 
@@ -58,9 +68,12 @@ var Zone = function(city, type, symbol, load) {
     data.button.innerHTML = 'Zone ' + data.label;
     data.button.addEventListener('click', this.buy.bind(this, i));
     data.button.style.display = 'none';
+    data.alt = document.createElement('div');
+    data.alt.className = 'alt';
     data.status = document.createElement('div');
     data.status.style.display = 'none';
     container.appendChild(data.button);
+    container.appendChild(data.alt);
     container.appendChild(data.status);
   }
   this.city.container.appendChild(container);
@@ -92,12 +105,16 @@ Zone.prototype.data = function() {
   return serial;
 };
 
+Zone.prototype.income = function(tax) {
+  return (tax || this.tax) / 100 * this.capacity() / 10;
+}
+
 Zone.prototype.price = function(size) {
   return Math.floor(this.sizes[size].density *
       Math.pow(1.1, this.sizes[size].amount));
 };
 
-Zone.prototype.update = function(tax) {
+Zone.prototype.update = function() {
   var visible = true;
   for (var i = 0; i < this.sizes.length; i++) {
     var data = this.sizes[i];
@@ -106,9 +123,16 @@ Zone.prototype.update = function(tax) {
       Price: format(cost),
       Built: data.built + ' / ' + data.amount,
     });
-    if (tax) {
-      this.city.currency += this.tax / 100 * data.built * data.density / 10;
-    }
+    output(data.alt, {
+      'Capacity per unit': format(data.density, this.symbol),
+      'Current demand': format(this.demand, this.symbol),
+      'Current capacity': format(this.capacity(), this.symbol),
+      'Current income': format(this.income()),
+      'Time to purchase': format(Math.max(0,
+            (cost - this.city.currency) / this.city.tax), ' seconds'),
+      Price: format(cost),
+      Built: data.built + ' / ' + data.amount,
+    }, 'Add ' + this.type + ' Zones');
     data.button.disabled = cost > this.city.currency;
     if (data.built < this.demand / data.density && data.built < data.amount) {
       data.built++;
@@ -119,18 +143,22 @@ Zone.prototype.update = function(tax) {
   }
 };
 
-var Update = function(city, level, cost, scale, message, levels) {
+var Update = function(city, level, cost, scale, message, levels, stats) {
   this.city = city;
   this.level = level || 0;
   this.cost = cost;
   this.scale = scale || 2;
   this.message = message;
   this.levels = levels || [];
+  this.stats = stats;
   this.container = document.createElement('div');
   this.container.className = 'update';
   this.button = document.createElement('button');
   this.button.addEventListener('click', this.buy.bind(this));
   this.container.appendChild(this.button);
+  this.alt = document.createElement('div');
+  this.alt.className = 'alt';
+  this.container.appendChild(this.alt);
   this.label = document.createElement('label');
   this.container.appendChild(this.label);
   this.city.updates.appendChild(this.container);
@@ -157,6 +185,14 @@ Update.prototype.update = function() {
     message = message(this);
   }
   var cost = this.price();
+  if (this.stats) {
+    this.stats();
+  } else {
+    output(this.alt, {
+      'Time to purchase': format(Math.max(0,
+            (cost - this.city.currency) / this.city.tax), ' seconds'),
+    }, this.title);
+  }
   this.button.innerHTML = format(cost);
   this.button.disabled = cost > this.city.currency;
   this.label.innerHTML = message.replace('CITY', '<b>' + this.city.name + '</b>');
@@ -167,6 +203,7 @@ var City = function(data) {
   this.day = data.day || 0;
   this.name = data.name || 'The City';
   this.population = data.population || 0;
+  this.tax = 0;
   this.container = document.createElement('div');
   this.container.className = 'city';
   this.status = document.createElement('div');
@@ -195,7 +232,16 @@ var City = function(data) {
       'Advertise CITY on other planets.',
       'Advertise CITY in other solar systems.',
       'Advertise CITY to other galaxies.',
-    ]);
+    ], function() {
+      var multiplier = Math.max(1.01, 2 - this.city.resident.tax / 100);
+      output(this.alt, {
+        Multiplier: format(multiplier, '&times;'),
+        Current: format(Math.pow(multiplier, this.level), '&hearts; per second'),
+        Upgrade: format(Math.pow(multiplier, this.level + 1), '&hearts; per second'),
+        'Time to purchase': format(Math.max(0,
+              (this.price() - this.city.currency) / this.city.tax), ' seconds'),
+      }, 'Gain population faster');
+    });
   this.residentDemand = new Update(this, data.residentDemand, 5000, 1.9,
     'Pay people for moving to CITY.', [
       'Build a school in CITY.',
@@ -214,7 +260,15 @@ var City = function(data) {
       'Provide free healthcare in CITY.',
       'Move other world wonders to CITY.',
       'Build Fountain of Youth in CITY.',
-    ]);
+    ], function() {
+      output(this.alt, {
+        Multiplier: format(residentMultiplier, '&times;'),
+        Current: format(this.city.resident.demand, '&hearts;'),
+        Upgrade: format(this.city.resident.demand * residentMultiplier, '&hearts;'),
+        'Time to purchase': format(Math.max(0,
+              (this.price() -this.city.currency) /this.city.tax), ' seconds'),
+      }, 'Increase residential demand');
+    });
   this.commerceDemand = new Update(this, data.commerceDemand, 5000, 1.8,
     'Give corporations extra votes.', [
       'Put up billboards in CITY.',
@@ -231,7 +285,15 @@ var City = function(data) {
       'Declare corporations better people.',
       'Legalize all narcotics.',
       'Give corporations CITY keys.',
-    ]);
+    ], function() {
+      output(this.alt, {
+        Multiplier: format(commerceMultiplier, '&times;'),
+        Current: format(this.city.commerce.demand, '&hearts;'),
+        Upgrade: format(this.city.commerce.demand * commerceMultiplier, '&hearts;'),
+        'Time to purchase': format(Math.max(0,
+              (this.price() -this.city.currency) /this.city.tax), ' seconds'),
+      }, 'Increase commercial demand');
+    });
   this.industryDemand = new Update(this, data.industryDemand, 10000, 1.7,
     'Increase robot workforce.', [
       'Build a power plant in CITY.',
@@ -250,13 +312,48 @@ var City = function(data) {
       'Upgrade workers to cyborgs.',
       'Repeal human rights protections.',
       'Nerve staple cyborg workers.',
-    ]);
+    ], function() {
+      output(this.alt, {
+        Multiplier: format(industryMultiplier, '&times;'),
+        Current: format(this.city.industry.demand, '&hearts;'),
+        Upgrade: format(this.city.industry.demand * industryMultiplier, '&hearts;'),
+        'Time to purchase': format(Math.max(0,
+              (this.price() -this.city.currency) /this.city.tax), ' seconds'),
+      }, 'Increase industrial demand');
+    });
   this.residentTax = new Update(this, data.residentTax, 1000, 2.6, function() {
-    return 'Raise Residential tax (<b>' + this.resident.tax + '</b>%).'}.bind(this));
+    return 'Raise Residential tax (<b>' + this.resident.tax + '</b>%).'}.bind(this), [],
+    function() {
+      output(this.alt, {
+        'New Rate': this.city.resident.tax + 1 + '%',
+        Current: format(this.city.resident.income()),
+        Upgrade: format(this.city.resident.income(this.city.resident.tax + 1)),
+        'Time to purchase': format(Math.max(0,
+              (this.price() -this.city.currency) /this.city.tax), ' seconds'),
+      }, 'Raise residential taxes');
+    });
   this.commerceTax = new Update(this, data.commerceTax, 1000, 2.4, function() {
-    return 'Raise Commercial tax (<b>' + this.commerce.tax + '</b>%).'}.bind(this));
+    return 'Raise Commercial tax (<b>' + this.commerce.tax + '</b>%).'}.bind(this), [],
+    function() {
+      output(this.alt, {
+        'New Rate': this.city.commerce.tax + 1 + '%',
+        Current: format(this.city.commerce.income()),
+        Upgrade: format(this.city.commerce.income(this.city.commerce.tax + 1)),
+        'Time to purchase': format(Math.max(0,
+              (this.price() -this.city.currency) /this.city.tax), ' seconds'),
+      }, 'Raise commercial taxes');
+    });
   this.industryTax = new Update(this, data.industryTax, 1000, 2.2, function() {
-    return 'Raise Industrial tax (<b>' + this.industry.tax + '</b>%).'}.bind(this));
+    return 'Raise Industrial tax (<b>' + this.industry.tax + '</b>%).'}.bind(this), [],
+    function() {
+      output(this.alt, {
+        'New Rate': this.city.industry.tax + 1 + '%',
+        Current: format(this.city.industry.income()),
+        Upgrade: format(this.city.industry.income(this.city.industry.tax + 1)),
+        'Time to purchase': format(Math.max(0,
+              (this.price() -this.city.currency) /this.city.tax), ' seconds'),
+      }, 'Raise industrial taxes');
+    });
   this.rename = new Update(this, data.rename, 1000, 1.2, 'Rename CITY.');
   this.rename.button.addEventListener('click', function(){
     this.name = prompt('Rename ' + this.name + ' to:');
@@ -272,7 +369,8 @@ var City = function(data) {
         ga('send', 'event', 'action', 'reset', JSON.stringify(this.data()), this.day);
       }
       localStorage.setItem('cityclicker', '');
-      location.reload();
+      document.body.removeChild(this.container);
+      city = new City({});
     }
   }.bind(this));
   this.news = new Update(this, data.news, 1, 1.07, function() {
@@ -406,34 +504,40 @@ City.prototype.spend = function(cost) {
   }
 };
 
-City.prototype.update = function(tax) {
+City.prototype.update = function(write) {
   var ratio = Math.max(20,
       Math.min(80, 10 + Math.log(this.population) * 4)) / 100;
   this.resident.tax = 10 + this.residentTax.level;
   this.commerce.tax = 15 + this.commerceTax.level;
   this.industry.tax = 12 + this.industryTax.level;
-  this.commerce.demand = Math.max(1,
+  this.commerce.demand = 1.1 * Math.max(1,
       this.population * Math.max(.1, ratio - this.commerce.tax / 100) *
-      Math.pow(1.1, this.commerceDemand.level));
-  this.industry.demand = Math.max(1,
+      Math.pow(commerceMultiplier, this.commerceDemand.level));
+  this.industry.demand = 1.1 * Math.max(1,
       this.population * Math.max(.1, 1 - ratio - this.industry.tax / 100) *
-      Math.pow(1.1, this.industryDemand.level));
+      Math.pow(industryMultiplier, this.industryDemand.level));
   this.resident.demand = Math.max(1,
+      Math.max(.1, 1 - this.resident.tax / 100) *
       (this.commerce.demand + this.commerce.capacity() +
-       this.industry.demand + this.industry.capacity() / 4) * 
-      Math.pow(1.04, this.residentDemand.level));
+       this.industry.demand + this.industry.capacity() / 4) *
+      Math.pow(residentMultiplier, this.residentDemand.level));
   this.items.forEach(function(item) {
-    item.update(tax);
+    item.update();
   });
-  if (this.population < this.resident.capacity()) {
-    this.population += Math.pow(Math.max(1.01, 2 - this.resident.tax / 100),
-        this.transport.level);
+  this.tax = this.resident.income() + this.commerce.income() + this.industry.income();
+  if (write) {
+    this.currency += this.tax;
+    if (this.population < this.resident.capacity()) {
+      this.population += Math.pow(Math.max(1.01, 2 - this.resident.tax / 100),
+          this.transport.level);
+    }
   }
   output(this.status, {
     City: this.name,
     Population: format(this.population, '&hearts;'),
-    Coffers: format(this.currency),
-  }, '<b>' + this.date() + '</b>');
+    Treasury: format(this.currency),
+    'Daily Income': format(this.tax),
+  }, this.date());
   localStorage.setItem('cityclicker', btoa(JSON.stringify(this.data())));
   if (ga && (this.day < 200 && this.day % 10 == 0) || (this.day < 2000 && this.day % 100 == 0) || this.day % 1000 == 0) {
     ga('send', 'event', 'action', 'save', JSON.stringify(this.data()),  this.population);
