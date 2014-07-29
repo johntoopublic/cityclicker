@@ -3,11 +3,14 @@ body, button, h1 {
   margin: 0;
 }
 
+button, .alt, .newspaper>div {
+  border: 1px solid #000;
+  box-shadow: #000 0 2px 4px;
+}
+
 button {
   background: #fff;
-  border: 1px solid #000;
   border-radius: 10px;
-  box-shadow: #000 0 2px 4px;
   cursor: pointer;
   width: 100%;
 }
@@ -30,6 +33,17 @@ h1 {
 u {
   border-bottom: 1px solid #666;
   text-decoration: none;
+}
+
+.alt {
+  background: #fff;
+  display: none;
+  padding: 5px;
+  position: absolute;
+}
+
+button:hover + .alt {
+  display: block;
 }
 
 .city {
@@ -74,8 +88,6 @@ u {
 }
 
 .newspaper>div {
-  border: 1px solid #000;
-  box-shadow: #000 0 2px 4px;
   margin: 10px;
   padding: 10px;
 }
