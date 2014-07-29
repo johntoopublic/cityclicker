@@ -94,7 +94,7 @@ Zone.prototype.price = function(size) {
       Math.pow(1.1, this.sizes[size].amount));
 };
 
-Zone.prototype.update = function() {
+Zone.prototype.update = function(tax) {
   var visible = true;
   for (var i = 0; i < this.sizes.length; i++) {
     var data = this.sizes[i];
@@ -103,7 +103,9 @@ Zone.prototype.update = function() {
       Price: format(cost),
       Built: data.built + ' / ' + data.amount,
     });
-    this.city.currency += this.tax / 100 * data.built * data.density / 10;
+    if (tax) {
+      this.city.currency += this.tax / 100 * data.built * data.density / 10;
+    }
     data.button.disabled = cost > this.city.currency;
     if (data.built < this.demand / data.density && data.built < data.amount) {
       data.built++;
@@ -164,6 +166,9 @@ var City = function(data) {
   this.population = data.population || 0;
   this.container = document.createElement('div');
   this.container.className = 'city';
+  this.status = document.createElement('div');
+  this.status.className = 'status';
+  this.container.appendChild(this.status);
   this.items = [];
   this.resident = new Zone(this, 'Residential', '&hearts;', data.resident);
   this.commerce = new Zone(this, 'Commercial', '&diams;', data.commerce);
@@ -284,9 +289,6 @@ var City = function(data) {
   this.newspaper = document.createElement('div');
   this.newspaper.className = 'newspaper';
   this.container.appendChild(this.newspaper);
-  this.status = document.createElement('div');
-  this.status.className = 'panel';
-  this.container.appendChild(this.status);
   this.update();
   document.body.appendChild(this.container);
 };
@@ -323,7 +325,8 @@ City.prototype.report = function() {
   update.appendChild(close);
   var text = document.createElement('div');
   var resident = this.resident.demand / this.resident.capacity();
-  var html = '<h1>' + this.name + ' News</h1>';
+  var html = '<b class="date">Day ' + this.day+ '</b>';
+  html += '<h1>' + this.name + ' News</h1>';
   html += '<h3>Opinion</h3>';
   if (resident >= 1) {
     var demand = this.transport.label.innerHTML;
@@ -382,7 +385,11 @@ City.prototype.report = function() {
   }
   text.innerHTML = html;
   update.appendChild(text);
-  this.newspaper.appendChild(update);
+  if (this.newspaper.firstChild) {
+    this.newspaper.insertBefore(update, this.newspaper.firstChild);
+  } else {
+    this.newspaper.appendChild(update);
+  }
 }
 
 City.prototype.spend = function(cost) {
@@ -392,7 +399,7 @@ City.prototype.spend = function(cost) {
   }
 };
 
-City.prototype.update = function() {
+City.prototype.update = function(tax) {
   var ratio = Math.max(20,
       Math.min(80, 10 + Math.log(this.population) * 4)) / 100;
   this.resident.tax = 10 + this.residentTax.level;
@@ -409,7 +416,7 @@ City.prototype.update = function() {
        this.industry.demand + this.industry.capacity() / 4) * 
       Math.pow(1.04, this.residentDemand.level));
   this.items.forEach(function(item) {
-    item.update();
+    item.update(tax);
   });
   if (this.population < this.resident.capacity()) {
     this.population += Math.pow(Math.max(1.01, 2 - this.resident.tax / 100),
@@ -437,7 +444,7 @@ var load = function() {
 var data = load();
 var city = new City(data);
 var time = function() {
-  city.update();
+  city.update(true);
   city.day++;
   setTimeout(time, 1000);
 };
