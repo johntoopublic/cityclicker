@@ -121,6 +121,11 @@ Zone.prototype.price = function(size) {
 
 Zone.prototype.update = function() {
   var visible = true;
+  var demand = this.demand;
+  for (var i = this.sizes.length - 1; i >= 0; i--) {
+    var data = this.sizes[i];
+    demand -= data.built * data.density;
+  }
   for (var i = 0; i < this.sizes.length; i++) {
     var data = this.sizes[i];
     var cost = this.price(i);
@@ -137,8 +142,9 @@ Zone.prototype.update = function() {
       'Time to purchase': formatTime(this.city, cost),
     }, 'Add ' + this.type + ' Zones');
     data.button.disabled = cost > this.city.currency;
-    if (data.built < this.demand / data.density && data.built < data.amount) {
+    if (demand > 0 && data.built < data.amount) {
       data.built++;
+      demand -= data.density;
     }
     data.button.style.display = visible ? '' : 'none';
     data.status.style.display = visible ? '' : 'none';
